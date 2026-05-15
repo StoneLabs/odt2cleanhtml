@@ -213,7 +213,13 @@ def process(input_path):
     print(" -> Fixing newline quotation mark bug fix")
     cleaned = re.sub(
         r'\n“(<[^<>]*>)', 
-        r'\1“',
+        r'\n\1“',
+        cleaned
+    )
+
+    cleaned = re.sub(
+        r'(<[^<>]*>)”\n',
+        r'”\1\n',
         cleaned
     )
     
