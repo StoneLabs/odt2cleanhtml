@@ -2,37 +2,6 @@
 
 Convert LibreOffice `.odt` files to clean, minimal HTML while preserving paragraph order and essential formatting.
 
-## Example
-
-<table>
-<tr>
-<td>Input (LibreOffice ODT)</td>
-<td>Output (Cleaned HTML)</td>
-</tr>
-<tr>
-<td width="50%">
-
-<img src="example.png" alt="ODT document screenshot" width="100%">
-
-</td>
-<td width="50%">
-
-```html
-<span style="font-size:2.0em">Example text</span>
-
-This is a sample text with <b>bold</b>, <i>italic</i>, <u>underlined</u> texts.
-
-
-<strong>Empty paragraphs like above are preserved.</strong>
-
-<strong>Larger <span style="font-size:1.5em">text</span>
-...
-```
-
-</td>
-</tr>
-</table>
-
 
 ## What it does
 
@@ -42,6 +11,49 @@ This is a sample text with <b>bold</b>, <i>italic</i>, <u>underlined</u> texts.
 - Converts non-standard font sizes to relative `<span style="font-size:Xem">` tags
 - Handles headings, blockquotes, lists, and nested structures
 - Fixes common LibreOffice HTML export bugs (split quotation marks, empty paragraphs)
+
+
+## Example
+
+<table>
+<tr>
+<td>
+  
+Input
+  
+(LibreOffice ODT)
+
+</td>
+<td width="30%">
+
+<img src="example.png" alt="ODT document screenshot" width="100%">
+ 
+</td>
+</tr>
+<tr>
+<td>
+
+Output
+  
+(Clean HTML)
+
+</td>
+<td>
+
+```html
+<span style="font-size:2.0em">Example text</span>
+
+This is a sample text with <b>bold</b>, <i>italic</i>, <u>underlined</u> texts.
+
+
+<strong>Empty paragraphs like above are preserved.</strong>
+
+Larger <span style="font-size:1.5em">text</span><span style="font-size:2.0em">is also</span>[...]
+```
+
+</td>
+</tr>
+</table>
 
 
 ## Difference from built in HTML exporter
