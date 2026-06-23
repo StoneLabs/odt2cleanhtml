@@ -124,45 +124,53 @@ def process(input_path):
         print(f"[bold red]Error: file not found: {input_path}")
         return
 
-    if Path(input_path).suffix.lower() != '.odt':
-        print(f"[bold red]Error: expected .odt file, got: {Path(input_path).suffix}")
+    fileextension = Path(input_path).suffix.lower()
+    if fileextension != '.odt' and fileextension != '.fodt':
+        print(f"[bold red]Error: expected .odt or .fodt file, got: {Path(input_path).suffix}")
         return
 
-    patched = '/tmp/input_patched.odt'
+    is_flat = fileextension == '.fodt'
+    patched = f'/tmp/input_patched{fileextension}'
     html_dir = '/tmp/input_patched/'
     html_file = '/tmp/input_patched/input_patched.html'
     html_cleaned = html_file + ".cleaned.html"
 
     print(f"=> Reading {input_path}...")
-    with zipfile.ZipFile(input_path) as z:
-        content = z.read('content.xml').decode()
+    if is_flat:
+        with open(input_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+    else:
+        with zipfile.ZipFile(input_path) as z:
+            content = z.read('content.xml').decode()
 
     empty_paras = len(re.findall(r'<text:p[^>]*/>', content))
-    print(f" -> Found {empty_paras} empty [reset]paragraph(s), patching...")
+    print(f" -> Found {empty_paras} empty paragraph(s), patching...")
     content = re.sub(
         r'<text:p[^>]*/>', 
         '<text:p text:style-name="Text_20_Body">EMPTY_PARA_PLACEHOLDER</text:p>',
         content
     )
 
-    print(f"=> Writing patched ODT to {patched}...")
-    with zipfile.ZipFile(patched, 'w') as zout:
-        with zipfile.ZipFile(input_path) as zin:
-            for item in zin.infolist():
-                if item.filename == 'content.xml':
-                    zout.writestr(item, content)
-                else:
-                    zout.writestr(item, zin.read(item.filename))
+    print(f"=> Writing patched {'FODT' if is_flat else 'ODT'} to {patched}...")
+    if is_flat:
+        with open(patched, 'w', encoding='utf-8') as f:
+            f.write(content)
+    else:
+        with zipfile.ZipFile(patched, 'w') as zout:
+            with zipfile.ZipFile(input_path) as zin:
+                for item in zin.infolist():
+                    if item.filename == 'content.xml':
+                        zout.writestr(item, content)
+                    else:
+                        zout.writestr(item, zin.read(item.filename))
 
     print(f"=> Running libreoffice convert on {patched}...", end="")
     result = subprocess.run(['libreoffice', "--headless", "--convert-to", "html", "--outdir", html_dir, patched])
-
-
     if result.returncode != 0:
         print(" FAILED.")
-        print(f"[bold red]Error: pandoc failed:\n{result.stderr}")
+        print(f"[bold red]Error: libreoffice failed:\n{result.stderr}")
         return
-    else: 
+    else:
         print(f" OK.")
 
     print(f" -> Checking if output html {html_file} exists...")
